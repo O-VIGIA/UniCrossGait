@@ -1,0 +1,5 @@
+pytest>=7.0
+PyYAML>=5.4
+
+# PyTorch is intentionally not pinned here. Use the CUDA/PyTorch build required
+# by the selected OpenGait release, then run the framework-independent tests.

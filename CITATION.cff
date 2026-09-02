@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the UniCrossGait paper."
+title: "UniCrossGait: Official Reference Implementation"
+type: software
+authors:
+  - family-names: Lu
+    given-names: Zhiyang
+  - family-names: Wang
+    given-names: Zhu
+  - family-names: Cheng
+    given-names: Ming
+  - family-names: Wang
+    given-names: Cheng
+repository-code: "https://github.com/O-VIGIA/UniCrossGait"
+url: "https://doi.org/10.1109/TMM.2026.3664966"
+preferred-citation:
+  type: article
+  authors:
+    - family-names: Lu
+      given-names: Zhiyang
+    - family-names: Wang
+      given-names: Zhu
+    - family-names: Cheng
+      given-names: Ming
+    - family-names: Wang
+      given-names: Cheng
+  title: "UniCrossGait: Unified Cross-Modal Gait Recognition Based on Knowledge Distillation"
+  journal: "IEEE Transactions on Multimedia"
+  year: 2026
+  volume: 28
+  start: 5118
+  end: 5130
+  doi: "10.1109/TMM.2026.3664966"

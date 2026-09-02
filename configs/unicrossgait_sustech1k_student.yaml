@@ -1,0 +1,162 @@
+# Stage 2: freeze the teacher and train both unimodal students jointly.
+# This is a reference template. Edit paths before use.
+
+data_cfg:
+  dataset_name: SUSTech1K
+  test_dataset_name: SUSTech1K
+  dataset_root: YOUR_SUSTECH1K_PKL_ROOT
+  dataset_partition: YOUR_SUSTECH1K_PARTITION_JSON
+  num_workers: 8
+  cache: false
+  remove_no_gallery: false
+  load_point_raw: false
+  data_in_use: [true, true]
+
+model_cfg:
+  model: UniCrossGait
+  stage: student
+  teacher_checkpoint: YOUR_STAGE1_TEACHER_CHECKPOINT
+  teacher_checkpoint_strict: true
+  camera_input_index: 1
+  depth_input_index: 0
+  bin_num: [16]
+  temperature: 4.0
+  warmup_start: 0.1
+  warmup_end: 1.5
+  warmup_iterations: 40000
+  detach_balance: false
+  # The authors' training snapshot applies student ID classification, while
+  # compact Eq. (28) lists only distillation + cross-modal triplet terms.
+  # Keep true to follow the author-code path; set false for literal Eq. (28).
+  use_student_ce: true
+  backbone_cfg_2d:
+    type: ResNet9
+    block: BasicBlock
+    channels: [64, 128, 256, 512]
+    in_channel: 1
+    layers: [1, 2, 2, 1]
+    strides: [1, 2, 2, 1]
+    maxpool: true
+  backbone_cfg_3d:
+    type: ResNet9
+    block: BasicBlock
+    channels: [64, 128, 256, 512]
+    in_channel: 3
+    layers: [1, 2, 2, 1]
+    strides: [1, 2, 2, 1]
+    maxpool: true
+  fusion_cfg:
+    channels: 512
+    attention_dim: 512
+    num_heads: 8
+    dropout: 0.1
+    negative_slope: 0.02
+  SeparateFCs:
+    parts_num: 16
+    in_channels: 512
+    out_channels: 256
+    norm: false
+  SeparateBNNecks:
+    parts_num: 16
+    in_channels: 256
+    class_num: 250
+    norm: true
+    parallel_BN1d: true
+
+loss_cfg:
+  - type: TripletLoss
+    log_prefix: triplet_2d3d
+    margin: 0.2
+    loss_term_weight: 0.5
+  - type: TripletLoss
+    log_prefix: triplet_3d2d
+    margin: 0.2
+    loss_term_weight: 0.5
+  - type: DirectionFeatureImitationLoss
+    log_prefix: dfi_2d
+    loss_term_weight: 1.0
+  - type: DirectionFeatureImitationLoss
+    log_prefix: dfi_3d
+    loss_term_weight: 1.0
+  - type: IntraSampleCorrelationLoss
+    log_prefix: intra_c_2d
+    loss_term_weight: 1.0
+  - type: IntraSampleCorrelationLoss
+    log_prefix: intra_c_3d
+    loss_term_weight: 1.0
+  - type: InterSampleCorrelationLoss
+    log_prefix: inter_c_2d
+    loss_term_weight: 1.0
+  - type: InterSampleCorrelationLoss
+    log_prefix: inter_c_3d
+    loss_term_weight: 1.0
+  - type: CrossEntropyLoss
+    log_prefix: softmax_2d
+    scale: 16
+    label_smooth: true
+    eps: 0.1
+    log_accuracy: true
+    loss_term_weight: 1.0
+  - type: CrossEntropyLoss
+    log_prefix: softmax_3d
+    scale: 16
+    label_smooth: true
+    eps: 0.1
+    log_accuracy: true
+    loss_term_weight: 1.0
+
+optimizer_cfg:
+  solver: Adam
+  lr: 0.001
+  betas: [0.9, 0.999]
+  weight_decay: 0.0005
+
+scheduler_cfg:
+  scheduler: MultiStepLR
+  milestones: [20000, 30000]
+  gamma: 0.1
+
+trainer_cfg:
+  enable_float16: false
+  fix_BN: false
+  log_iter: 100
+  restore_ckpt_strict: false
+  restore_hint: 0
+  save_iter: 10000
+  save_name: UniCrossGait_student
+  sync_BN: true
+  total_iter: 40000
+  with_test: false
+  optimizer_reset: false
+  scheduler_reset: false
+  sampler:
+    type: TripletSampler
+    batch_shuffle: true
+    batch_size: [16, 8]
+    frames_num_fixed: 10
+    sample_type: fixed_unordered
+  transform:
+    - type: BaseSilTransform
+      divsor: 255.0
+    - type: BaseSilTransform
+      divsor: 255.0
+
+evaluator_cfg:
+  enable_float16: false
+  restore_ckpt_strict: false
+  restore_hint: 40000
+  save_name: UniCrossGait_student
+  eval_func: evaluate_unicrossgait
+  metric: cos
+  modes: [2d3d, 3d2d]
+  ranks: [1, 5]
+  sampler:
+    type: InferenceSampler
+    batch_size: 4
+    sample_type: all_ordered
+    frames_all_limit: 720
+  transform:
+    - type: BaseSilTransform
+      divsor: 255.0
+    - type: BaseSilTransform
+      divsor: 255.0

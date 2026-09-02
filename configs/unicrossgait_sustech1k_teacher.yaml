@@ -1,0 +1,124 @@
+# Stage 1: train the multimodal teacher.
+# This is a reference template. Edit the dataset paths and input-file mapping.
+
+data_cfg:
+  dataset_name: SUSTech1K
+  test_dataset_name: SUSTech1K
+  dataset_root: YOUR_SUSTECH1K_PKL_ROOT
+  dataset_partition: YOUR_SUSTECH1K_PARTITION_JSON
+  num_workers: 8
+  cache: false
+  remove_no_gallery: false
+  load_point_raw: false
+  # Expected selected file order: [depth image, silhouette]. If each sequence
+  # directory contains more files, replace this mask to select exactly those two.
+  data_in_use: [true, true]
+
+model_cfg:
+  model: UniCrossGait
+  stage: teacher
+  camera_input_index: 1
+  depth_input_index: 0
+  bin_num: [16]
+  backbone_cfg_2d:
+    type: ResNet9
+    block: BasicBlock
+    channels: [64, 128, 256, 512]
+    in_channel: 1
+    layers: [1, 2, 2, 1]
+    strides: [1, 2, 2, 1]
+    maxpool: true
+  backbone_cfg_3d:
+    type: ResNet9
+    block: BasicBlock
+    channels: [64, 128, 256, 512]
+    in_channel: 3
+    layers: [1, 2, 2, 1]
+    strides: [1, 2, 2, 1]
+    maxpool: true
+  fusion_cfg:
+    channels: 512
+    attention_dim: 512
+    num_heads: 8
+    dropout: 0.1
+    negative_slope: 0.02
+  SeparateFCs:
+    parts_num: 16
+    in_channels: 512
+    out_channels: 256
+    norm: false
+  SeparateBNNecks:
+    parts_num: 16
+    in_channels: 256
+    class_num: 250
+    norm: true
+    parallel_BN1d: true
+
+loss_cfg:
+  - type: TripletLoss
+    log_prefix: triplet_fusion
+    margin: 0.2
+    loss_term_weight: 1.0
+  - type: CrossEntropyLoss
+    log_prefix: softmax_fusion
+    scale: 16
+    label_smooth: true
+    eps: 0.1
+    log_accuracy: true
+    loss_term_weight: 1.0
+
+optimizer_cfg:
+  solver: Adam
+  lr: 0.001
+  betas: [0.99, 0.999]
+  weight_decay: 0.0005
+
+scheduler_cfg:
+  scheduler: MultiStepLR
+  milestones: [20000, 30000]
+  gamma: 0.1
+
+trainer_cfg:
+  enable_float16: false
+  fix_BN: false
+  log_iter: 100
+  restore_ckpt_strict: true
+  restore_hint: 0
+  save_iter: 10000
+  save_name: UniCrossGait_teacher
+  sync_BN: true
+  total_iter: 40000
+  with_test: false
+  optimizer_reset: false
+  scheduler_reset: false
+  sampler:
+    type: TripletSampler
+    batch_shuffle: true
+    batch_size: [16, 8]
+    frames_num_fixed: 10
+    sample_type: fixed_unordered
+  transform:
+    - type: BaseSilTransform
+      divsor: 255.0
+    - type: BaseSilTransform
+      divsor: 255.0
+
+evaluator_cfg:
+  enable_float16: false
+  restore_ckpt_strict: false
+  restore_hint: 40000
+  save_name: UniCrossGait_teacher
+  eval_func: evaluate_unicrossgait
+  metric: cos
+  modes: [2d3d, 3d2d]
+  ranks: [1, 5]
+  sampler:
+    type: InferenceSampler
+    batch_size: 4
+    sample_type: all_ordered
+    frames_all_limit: 720
+  transform:
+    - type: BaseSilTransform
+      divsor: 255.0
+    - type: BaseSilTransform
+      divsor: 255.0

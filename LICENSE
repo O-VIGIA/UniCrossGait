@@ -1,0 +1,34 @@
+UniCrossGait Academic Research License
+Version 1.0, 2026
+
+Copyright (c) 2026 the UniCrossGait authors. All rights reserved.
+
+Permission is hereby granted, free of charge, to use, copy, and modify the
+original UniCrossGait extension code contained in this repository solely for
+non-commercial academic research, scholarly publication, and education,
+subject to all of the following conditions:
+
+1. This copyright notice and license must be retained in all copies or
+   substantial portions of the code.
+2. Publications and public results that use the code must cite the paper
+   “UniCrossGait: Unified Cross-Modal Gait Recognition Based on Knowledge
+   Distillation,” IEEE Transactions on Multimedia, 2026,
+   doi:10.1109/TMM.2026.3664966.
+3. The code may not be used, in whole or in part, for commercial purposes,
+   revenue-generating services, commercial product development, or paid
+   consulting without prior written permission from the copyright holders.
+4. No rights are granted to third-party software, datasets, model weights,
+   trademarks, or other materials. Their respective licenses and terms remain
+   applicable. In particular, use with OpenGait is subject to OpenGait's terms.
+5. Redistribution of modified versions must clearly state that changes were
+   made and may not imply endorsement by the original authors.
+
+THE CODE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN
+CONNECTION WITH THE CODE OR THE USE OR OTHER DEALINGS IN THE CODE.
+
+For permissions beyond this license, contact the authors through the
+correspondence information in the paper.
